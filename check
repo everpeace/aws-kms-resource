@@ -9,5 +9,10 @@ exec 1>&2 # send normal stdout to stderr for logging
 payload=$(mktemp -d)/aws-kms-resource-input
 cat > $payload <&0
 
-version=$(jq -r .version.ref < $payload)
-echo "[{\"ref\":\"$(expr $version + 1)\"}]"
+version=$(jq -r '.version.ref // ""' < $payload)
+
+if [ -n "$version" ]; then
+  echo "[{\"ref\":\"$(expr $version + 1)\"}]"
+else
+  echo '[{"ref":"0"}]'
+fi
