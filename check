@@ -1,3 +1,13 @@
 #!/bin/bash
+set -eux
+set -o pipefail
 
-echo "[]"
+exec 3>&1 # use fd 3 for script output
+exec 1>&2 # send normal stdout to stderr for logging
+
+# read stdin
+payload=$(mktemp -d)/aws-kms-resource-input
+cat > $payload <&0
+
+version=$(jq -r .version.ref < $payload)
+echo "[{\"ref\":\"$(expr $version + 1)\"}]"
