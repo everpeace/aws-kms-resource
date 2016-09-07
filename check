@@ -12,7 +12,7 @@ cat > $payload <&0
 version=$(jq -r '.version.ref // ""' < $payload)
 
 if [ -n "$version" ]; then
-  echo "[{\"ref\":\"$(expr $version + 1)\"}]" | jq -rcM
+  echo "[{\"ref\":\"$(expr $version + 1)\"}]" | jq -rcM .
 else
-  echo '[{"ref":"0"}]' | jq -rcM
+  echo '[{"ref":"0"}]' | jq -rcM .
 fi
