@@ -1,0 +1,60 @@
+#!/bin/bash
+set -eux
+set -o pipefail
+
+exec 3>&1 # use fd 3 for script output
+exec 1>&2 # send normal stdout to stderr for logging
+
+# read stdin
+payload=$(mktemp -d)/aws-kms-resource-input
+cat > $payload <&0
+
+# destination
+destination=$1
+
+# for jq
+PATH=/usr/local/bin:$PATH
+
+# load aws credentials
+if [ -n "$(jq -r '.source.aws_access_key_id // ""' < $payload)" ]; then
+  export AWS_ACCESS_KEY_ID=$(jq -r .source.aws_access_key_id < $payload)
+fi
+
+if [ -n "$(jq -r '.source.aws_secret_access_key // ""' < $payload)" ]; then
+  export AWS_SECRET_ACCESS_KEY=$(jq -r .source.aws_secret_access_key < $payload)
+fi
+
+if [ -n "$(jq -r '.source.aws_region // ""' < $payload)" ]; then
+  export AWS_DEFAULT_REGION=$(jq -r .source.aws_region < $payload)
+fi
+
+#
+# load ciphers
+#
+# assumed inputs(in yaml)
+#   source:
+#     ciphers:
+#       cipher_name1: base64_encoded_cipher_text1
+#       cipher_name2: base64_encoded_cipher_text2
+ciphers_json=$(jq -r '.source.ciphers | to_entries' < $payload)
+
+decrypt() {
+  local ciphertext_fileb=$1
+  local plaintext_file=$2
+  aws kms decrypt --ciphertext-blob fileb://$ciphertext_fileb --query Plaintext --output text | base64 --decode > $plaintext_file
+}
+
+num=$(jq -r '.source.ciphers | to_entries | length' < $payload)
+if [ $num -gt 0 ]; then
+  cipherblob_dir=$(mktemp -d)
+  for i in $(seq 0 $(expr $num - 1)); do
+    cipher_name=$(echo $ciphers_json | jq -r .[$i].key)
+    echo $ciphers_json | jq -r .[$i].value | base64 --decode > $cipherblob_dir/$cipher_name
+    decrypt $cipherblob_dir/$cipher_name $destination/$cipher_name
+    echo "\"$cipher_name\" successfully decrypted via kms.  Plaintext stored to \"$destination/$cipher_name\""
+  done
+else
+  echo "no ciphers set. skip."
+fi
+
+echo '{metadata":[]}'
