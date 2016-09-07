@@ -8,6 +8,7 @@ exec 1>&2 # send normal stdout to stderr for logging
 # read stdin
 payload=$(mktemp -d)/aws-kms-resource-input
 cat > $payload <&0
+version=$(jq -r .version.ref < $payload)
 
 # destination
 destination=$1
@@ -57,4 +58,4 @@ else
   echo "no ciphers set. skip."
 fi
 
-echo '{metadata":[]}'
+echo "{\"version\":{\"ref\":\"$version\"}, \"metadata\":[]}" | jq -rcM
