@@ -32,34 +32,27 @@ else
   export AWS_DEFAULT_REGION="us-east-1"
 fi
 
-#
-# load ciphers
-#
-# assumed inputs(in yaml)
-#   source:
-#     ciphers:
-#       cipher_name1: base64_encoded_cipher_text1
-#       cipher_name2: base64_encoded_cipher_text2
-ciphers_json=$(jq -r '.source.ciphers | to_entries' < $payload)
 
-decrypt() {
-  local ciphertext_fileb=$1
-  local plaintext_file=$2
-  aws kms decrypt --ciphertext-blob fileb://$ciphertext_fileb --query Plaintext --output text | base64 --decode > $plaintext_file
-}
+#
+# decryption
+#
+source $(dirname $0)/decrypt.sh
 
-num=$(jq -r '.source.ciphers | to_entries | length' < $payload)
-if [ $num -gt 0 ]; then
-  cipherblob_dir=$(mktemp -d)
-  for i in $(seq 0 $(expr $num - 1)); do
-    cipher_name=$(echo $ciphers_json | jq -r .[$i].key)
-    echo $ciphers_json | jq -r .[$i].value | base64 --decode > $cipherblob_dir/$cipher_name
-    decrypt $cipherblob_dir/$cipher_name $destination/$cipher_name
-    echo "\"$cipher_name\" successfully decrypted via kms.  Plaintext stored to \"$destination/$cipher_name\""
-  done
-else
-  echo "no ciphers set. skip."
-fi
+# source:
+#   ciphers:
+echo "processing source.ciphers"
+decrypt_ciphers $payload ".source.ciphers" $destination
+
+# params:
+#   ciphers:
+echo "processing params.ciphers"
+decrypt_ciphers $payload ".params.ciphers" $destination
+
+# params:
+#   cipher_files:
+# echo "processing params.cipher_files"
+# decrypt_cipher_files $payload ".params.cipher_files" $destination
+
 
 jq -n '{
     version: { version: $version },
