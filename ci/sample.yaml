@@ -20,6 +20,9 @@ jobs:
   - name: decrypt_credentials
     plan:
       - get: credentials
+        params:
+          ciphers:
+            credential_name3: AQECAHgZ3RW+tvS__base64_encoded_cipher_text__AVQGT+RGxmY3Q==
       - task: cat_credentials
         config:
           platform: linux
@@ -36,3 +39,4 @@ jobs:
               - |
                 cat credentials/credential_name1
                 cat credentials/credential_name2
+                cat credentials/credential_name3

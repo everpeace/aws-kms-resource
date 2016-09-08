@@ -27,7 +27,7 @@ resource_types:
 * `aws_access_key_id`: *Optional.*  If not set, instance profiles are used when concourse worker runs on AWS.
 * `aws_secret_access_key`: *Optional.* If not set, instance profiles are used when concourse worker runs on AWS.
 * `aws_region`: *Optional.* Default value is `us-east-1`.
-* `ciphers`: *Required.* Object which contains cipher texts you want to decrypt.  Key of the object should be credential name.  Value of the key should be base64 encoded cipher text.  You can get this encoded string by `aws kms encrypt --key-id xxxxx --plaintext some_credential_plaintext --output text --query CiphertextBlob`
+* `ciphers`: *Optional.* Object which contains cipher texts you want to decrypt.  Key of the object should be credential name.  Value of the key should be base64 encoded cipher text.  You can get this encoded string by `aws kms encrypt --key-id xxxxx --plaintext some_credential_plaintext --output text --query CiphertextBlob`
 
   Example:
   ```
@@ -92,6 +92,9 @@ jobs:
   - name: decrypt_credentials
     plan:
       - get: credentials
+        params:
+          ciphers:
+            credential_name3: AQECAHgZ3RW+tvS__base64_encoded_cipher_text__AVQGT+RGxmY3Q==
       - task: cat_credentials
         config:
           platform: linux
@@ -108,7 +111,52 @@ jobs:
               - |
                 cat credentials/credential_name1
                 cat credentials/credential_name2
+                cat credentials/credential_name3
 ```
 
+## Can we decrypt files in other resources??
+Yes!  [aws-kms-resource](https://hub.docker.com/r/everpeace/aws-kms-resource/) docker image ships `decrypt` utility.  So you can easily decrypt your cipher text via kms in concourse tasks!
+To use `decrypt` utility, you need to source `/opt/resource/decrypt.sh` in container.  And then you can use `decrypt` function.
+
+`decrypt` function takes two arguments
+* first argument should be a path which contains base64 encoded cipher text.
+* second argument should be output path which will contain plain text of given cipher text.
+
+Here is an example.
+```
+resources:
+  - name: repo
+    type: git
+    source:
+      uri: git@github.com:some_org/public_repo
+
+jobs:
+  - name: decrypt_file_in_repo
+    plan:
+      - get: repo
+      - task: decrypt_credential
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: everpeace/aws-kms-resource
+          inputs:
+            - name: repo
+          outputs:
+            - name: outputs
+          params:
+            AWS_ACCESS_KEY_ID: xxx
+            AWS_SECRET_ACCESS_KEY: yyyyyy
+            AWS_DEFAULT_REGION: us-east-1
+          run:
+            path: /bin/bash
+            args:
+            - -ec
+            - |
+              source /opt/resource/decrypt.sh
+              decrypt repo/file_contains_base_64_encoded_cipher_text outputs/plain_text
+              cat /outputs/plain_text
+```
 ## Tests
 todo.

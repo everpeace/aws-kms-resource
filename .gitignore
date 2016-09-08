@@ -1,3 +1,4 @@
 .envrc
 test_input
-test.yaml
+test*.yaml
+test*.yml

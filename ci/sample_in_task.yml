@@ -1,0 +1,33 @@
+resources:
+  - name: repo
+    type: git
+    source:
+      uri: https://github.com/some_org/public_repo.git
+
+jobs:
+  - name: test2
+    plan:
+      - get: repo
+      - task: decrypt_credential
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: everpeace/aws-kms-resource
+          inputs:
+            - name: repo
+          outputs:
+            - name: outputs
+          params:
+            AWS_ACCESS_KEY_ID: xxx
+            AWS_SECRET_ACCESS_KEY: yyyyyyy
+            AWS_DEFAULT_REGION: us-east-1
+          run:
+            path: /bin/bash
+            args:
+            - -ec
+            - |
+              source /opt/resource/decrypt.sh
+              decrypt repo/base64_encoded_ciphertext outputs/plaintext
+              cat outputs/plaintext
