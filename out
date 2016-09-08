@@ -1,5 +1,6 @@
 #!/bin/bash
-set -eux
+[ "$DEBUG" = "true" ] || set -x
+set -eu
 set -o pipefail
 
 exec 3>&1 # use fd 3 for script output
