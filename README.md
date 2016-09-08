@@ -28,7 +28,7 @@ resource_types:
 * `aws_secret_access_key`: *Optional.* If not set, instance profiles are used when concourse worker runs on AWS.
 * `aws_region`: *Optional.* Default value is `us-east-1`.
 * `ciphers`: *Required.* Object which contains cipher texts you want to decrypt.  Key of the object should be credential name.  Value of the key should be base64 encoded cipher text.  You can get this encoded string by `aws kms encrypt --key-id xxxxx --plaintext some_credential_plaintext --output text --query CiphertextBlob`
-  
+
   Example:
   ```
   ciphers:
@@ -62,7 +62,7 @@ jobs:
 you can find plaintext in files of `credentials/credential_name1` and `credentials/credential_name2`
 
 #### Parameters
-We plan to support it.  You might want to give some file paths containing base64 encoded cipher texts.
+* `ciphers`: *Optional.* Object which contains cipher texts you want to decrypt (the same format with Source Configuration above).
 
 ### `out`
 Do nothing.

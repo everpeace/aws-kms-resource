@@ -10,9 +10,10 @@ RUN echo test-base64 | base64 | base64 --decode
 RUN jq --version
 RUN aws --version
 
-COPY check     /opt/resource/check
-COPY in        /opt/resource/in
-COPY out       /opt/resource/out
+COPY check      /opt/resource/check
+COPY in         /opt/resource/in
+COPY out        /opt/resource/out
+COPY decrypt.sh /opt/resource/decrypt.sh
 
 RUN chmod +x /opt/resource/out /opt/resource/in /opt/resource/check
 
