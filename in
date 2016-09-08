@@ -28,6 +28,8 @@ fi
 
 if [ -n "$(jq -r '.source.aws_region // ""' < $payload)" ]; then
   export AWS_DEFAULT_REGION=$(jq -r .source.aws_region < $payload)
+else
+  export AWS_DEFAULT_REGION="us-east-1"
 fi
 
 #
