@@ -20,8 +20,10 @@ jobs:
           outputs:
             - name: outputs
           params:
-            AWS_ACCESS_KEY_ID: xxx
-            AWS_SECRET_ACCESS_KEY: yyyyyyy
+            # embedding aws api is NOT recommended.
+            # Instead, you can attach instance profiles to concourse workers.
+            # AWS_ACCESS_KEY_ID: xxx
+            # AWS_SECRET_ACCESS_KEY: yyyyyyy
             AWS_DEFAULT_REGION: us-east-1
           run:
             path: /bin/bash

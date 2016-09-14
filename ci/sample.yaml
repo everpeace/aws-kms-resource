@@ -8,8 +8,10 @@ resources:
   - name: credentials
     type: aws-kms
     source:
-      aws_access_key_id: xxx
-      aws_secret_access_key: yyyyyyyyyy
+      # embedding aws api is NOT recommended.
+      # Instead, you can attach instance profiles to concourse workers.
+      # aws_access_key_id: xxx
+      # aws_secret_access_key: yyyyyyyyyy
       aws_region: us-east-1
       ciphers:
         # values are base64 encoded cipher text

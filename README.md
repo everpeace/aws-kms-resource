@@ -23,7 +23,7 @@ resource_types:
 ```
 
 ## Source Configuration
-
+__CAUTION: I recommend you not to embed these aws api credentials in pipeline definitions.  Beacause, if aws api credentials and cipher texts given, these information is not secure at all.  Attaching InstanceProfiles to concourse worker are highly recommended.__
 * `aws_access_key_id`: *Optional.*  If not set, instance profiles are used when concourse worker runs on AWS.
 * `aws_secret_access_key`: *Optional.* If not set, instance profiles are used when concourse worker runs on AWS.
 * `aws_region`: *Optional.* Default value is `us-east-1`.
@@ -80,8 +80,10 @@ resources:
   - name: credentials
     type: aws-kms
     source:
-      aws_access_key_id: xxx
-      aws_secret_access_key: yyyyyyyyyy
+      # embedding aws api is NOT recommended.
+      # Instead, you can attach instance profiles to concourse workers.
+      # aws_access_key_id: xxx
+      # aws_secret_access_key: yyyyyyyyyy
       aws_region: us-east-1
       ciphers:
         # values are base64 encoded cipher text
@@ -146,8 +148,10 @@ jobs:
           outputs:
             - name: outputs
           params:
-            AWS_ACCESS_KEY_ID: xxx
-            AWS_SECRET_ACCESS_KEY: yyyyyy
+            # embedding aws api is NOT recommended.
+            # Instead, you can attach instance profiles to concourse workers.
+            # AWS_ACCESS_KEY_ID: xxx
+            # AWS_SECRET_ACCESS_KEY: yyyyyy
             AWS_DEFAULT_REGION: us-east-1
           run:
             path: /bin/bash
